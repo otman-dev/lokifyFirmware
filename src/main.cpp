@@ -368,6 +368,7 @@ void checkOTA() {
   fwHttp.end();
 }
 
+
 // TFT indicators
 void drawStatusIndicators() {
   uint16_t wifiColor = wifiConnected?ST77XX_GREEN:ST77XX_RED;
