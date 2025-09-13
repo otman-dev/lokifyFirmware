@@ -149,17 +149,32 @@ void loop() {
 // Wi-Fi
 void connectWiFiNonBlocking() {
   static unsigned long lastWiFiCheck = 0;
-  if (millis() - lastWiFiCheck < 1000) return;
-  lastWiFiCheck = millis();
+  static int failCount = 0;
+  static const int maxFailCount = 10; // Limit connection attempts
+  unsigned long now = millis();
+
+  // Exponential backoff: 1s + failCount*2s, max 20s
+  unsigned long interval = 1000 + min(failCount, 10) * 2000;
+  if (now - lastWiFiCheck < interval) return;
+  lastWiFiCheck = now;
 
   if (WiFi.status() != WL_CONNECTED) {
-    WiFi.begin("Tenda_2AAA80_Lab","87654321");
-    wifiConnected = false;
-    tft.fillRect(0, FOOTER_Y, 160, 20, ST77XX_BLUE);
-    tft.setCursor(10, FOOTER_Y+5);
-    tft.print("Connecting WiFi...");
+    if (failCount < maxFailCount) {
+      WiFi.begin("Tenda_2AAA80_Lab", "87654321");
+      wifiConnected = false;
+      failCount++;
+      tft.fillRect(0, FOOTER_Y, 160, 20, ST77XX_BLUE);
+      tft.setCursor(10, FOOTER_Y+5);
+      tft.print("Connecting WiFi... (" + String(failCount) + ")");
+    } else {
+      tft.fillRect(0, FOOTER_Y, 160, 20, ST77XX_RED);
+      tft.setCursor(10, FOOTER_Y+5);
+      tft.print("WiFi failed, retry later");
+      // Optionally, reset failCount after a long wait or user action
+    }
   } else if (!wifiConnected) {
     wifiConnected = true;
+    failCount = 0;
     tft.fillRect(0, FOOTER_Y, 160, 20, ST77XX_BLUE);
     tft.setCursor(10, FOOTER_Y+5);
     tft.print("WiFi Connected!");
