@@ -8,7 +8,7 @@
 #include <Update.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
-String currentFirmwareVersion = "1.0.13";
+String currentFirmwareVersion = "1.0.14";
 
 // ==== Device info ====
 const char* deviceID = "lock_01";
